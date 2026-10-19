@@ -7,8 +7,7 @@ class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
   @override
-  State<MainNavigationScreen> createState() =>
-      _MainNavigationScreenState();
+  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
@@ -32,17 +31,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           children: screens,
         ),
       ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         shape: const CircleBorder(),
         child: const Icon(Icons.add, size: 28),
       ),
-
       floatingActionButtonLocation: isTasksPage
           ? FloatingActionButtonLocation.endFloat
           : FloatingActionButtonLocation.centerDocked,
-
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
@@ -93,9 +89,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Icon(
             icon,
-            color: isSelected
-                ? AppColors.primary
-                : AppColors.secondaryText,
+            color: isSelected ? AppColors.primary : AppColors.secondaryText,
             size: 26,
           ),
         ),
