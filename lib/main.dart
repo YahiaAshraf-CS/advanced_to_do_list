@@ -24,15 +24,15 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Task & Calendar App',
       theme: AppTheme.lightTheme,
-      home: HomeScreen(),
+      home: const MainNavigationScreen(),
       routes: {
-        AppRoutes.home: (context) => HomeScreen(),
-        AppRoutes.allTasks: (context) => AllTasksScreen(),
-        AppRoutes.calendar: (context) => CalendarScreen(),
-        AppRoutes.settings: (context) => SettingsScreen(),
-        AppRoutes.documents: (context) => DocumentsScreen(),
-        AppRoutes.onboarding: (context) => OnboardingScreen(),
-        AppRoutes.signup: (context) => SignInScreen(),
+        AppRoutes.home: (context) => const HomeScreen(),
+        AppRoutes.allTasks: (context) => const AllTasksScreen(),
+        AppRoutes.calendar: (context) => const CalendarScreen(),
+        AppRoutes.settings: (context) => const SettingsScreen(),
+        AppRoutes.documents: (context) => const DocumentsScreen(),
+        AppRoutes.onboarding: (context) => const OnboardingScreen(),
+        AppRoutes.signup: (context) => const SignInScreen(),
       },
     );
   }
