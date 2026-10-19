@@ -1,6 +1,6 @@
+import 'package:advanced_to_do_list/view/widgets/task_card.dart';
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
-import '../widgets/task_card.dart';
 
 class AllTasksScreen extends StatelessWidget {
   const AllTasksScreen({super.key});
