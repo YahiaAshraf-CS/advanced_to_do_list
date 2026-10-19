@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class DocumentsScreen extends StatefulWidget {
-  const new({super.key});
+  const DocumentsScreen({super.key});
 
   @override
   State<DocumentsScreen> createState() => _DocumentsScreenState();

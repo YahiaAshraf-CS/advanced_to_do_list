@@ -1,3 +1,4 @@
+
 import 'package:advanced_to_do_list/core/routes/app_routes.dart';
 import 'package:advanced_to_do_list/theme/app_colors.dart';
 import 'package:advanced_to_do_list/view/widgets/Categories_widget.dart';
@@ -5,7 +6,7 @@ import 'package:advanced_to_do_list/view/widgets/task_card.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
-  const new({super.key});
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

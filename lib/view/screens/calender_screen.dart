@@ -34,9 +34,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   String get monthName {
     const months = [
-      'January', 'February', 'March', 'April',
-      'May', 'June', 'July', 'August',
-      'September', 'October', 'November', 'December',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return months[displayedMonth.month - 1];
   }
@@ -94,13 +103,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   icon: const Icon(Icons.chevron_left),
                 ),
                 Text(
-                '${selectedDate.day} $monthName ${displayedMonth.year}',
+                  '${selectedDate.day} $monthName ${displayedMonth.year}',
                   style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF858B96),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF858B96),
                   ),
-                 ),
+                ),
                 IconButton(
                   onPressed: () => changeMonth(1),
                   icon: const Icon(Icons.chevron_right),
@@ -161,8 +170,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: totalCells,
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 7,
                 mainAxisSpacing: 6,
                 crossAxisSpacing: 4,
@@ -175,8 +183,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   return const SizedBox.shrink();
                 }
 
-                final isSelected =
-                    selectedDate.year == displayedMonth.year &&
+                final isSelected = selectedDate.year == displayedMonth.year &&
                     selectedDate.month == displayedMonth.month &&
                     selectedDate.day == dayNumber;
 
@@ -193,21 +200,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   child: Container(
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.primary
-                          : Colors.transparent,
+                      color:
+                          isSelected ? AppColors.primary : Colors.transparent,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       '$dayNumber',
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.w600,
-                        color: isSelected
-                            ? Colors.white
-                            : const Color(0xFF202124),
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.w600,
+                        color:
+                            isSelected ? Colors.white : const Color(0xFF202124),
                       ),
                     ),
                   ),

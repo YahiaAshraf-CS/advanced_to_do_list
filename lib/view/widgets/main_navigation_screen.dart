@@ -60,7 +60,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           }
         },
         shape: const CircleBorder(),
-        child: Icon(  Icons.add, size: 28),
+        child: Icon(Icons.add, size: 28),
       ),
       floatingActionButtonLocation: isAllTasks
           ? FloatingActionButtonLocation.endFloat
