@@ -1,69 +1,135 @@
+
+import 'package:advanced_to_do_list/core/routes/app_routes.dart';
 import 'package:advanced_to_do_list/theme/app_colors.dart';
+import 'package:advanced_to_do_list/view/widgets/Categories_widget.dart';
+import 'package:advanced_to_do_list/view/widgets/task_card.dart';
 import 'package:flutter/material.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.darkText,
-        elevation: 0,
-      ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.home,
-              size: 80,
-              color: AppColors.primaryBlue,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          
+          children:[
+            
+            Container(
+              margin: const EdgeInsets.only(top: 16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              decoration: BoxDecoration(
+                
+                borderRadius: BorderRadius.circular(12.0),
+                color: AppColors.taskBackground,
+                // boxShadow: [
+                //   BoxShadow(
+                //     color: Colors.black.withOpacity(0.1),
+                //     blurRadius: 4.0,
+                //     offset: const Offset(0, 2),
+                //   ),
+                // ],
+              ),
+              child: Row(
+
+                children:[
+                  Icon(Icons.search),
+                  SizedBox(width: 10.0),
+                  Text('Search for tasks, events'),
+                ],
+              ),
             ),
-            const SizedBox(height: 24),
-            const Text(
-              'Welcome to your To Do List',
+            SizedBox(height: 18.0),
+            Text(
+              "Categories",
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 20.0,
                 fontWeight: FontWeight.bold,
-                color: AppColors.darkText,
-              ),
+                color: AppColors.black,
+              )
+
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'You successfully signed in.',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.grayText,
-              ),
+            SizedBox(height: 12.0),
+           GridView.count(
+              crossAxisCount: 3,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              children: const [
+                CategoryWidget(
+                  icon: Icons.work_outline,
+                  title: 'Work',
+                  color: Colors.blue,
+                ),
+                CategoryWidget(
+                  icon: Icons.person_outline,
+                  title: 'Personal',
+                  color: Colors.deepOrange,
+                ),
+                CategoryWidget(
+                  icon: Icons.shopping_cart_outlined,
+                  title: 'Shopping',
+                  color: Colors.amber,
+                ),
+                CategoryWidget(
+                  icon: Icons.favorite_border,
+                  title: 'Health',
+                  color: Colors.redAccent,
+                ),
+              ],
             ),
-            const SizedBox(height: 40),
-            OutlinedButton(
-              onPressed: () {
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/',
-                  (route) => false,
-                );
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primaryBlue,
-                side: const BorderSide(color: AppColors.primaryBlue),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            SizedBox(height: 18.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children:[
+                Text("Today's tasks",
+                style: TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.black,
+                )),
+               InkWell(
+                onTap: (){
+                  
+                },
+                child: Text("See all",
+                style: TextStyle(
+                  
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),),
+               )
+              ],
+            ),
+            SizedBox(height: 12.0),
+            Expanded(
+              child: ListView.separated(
+                separatorBuilder: (context, index) => const SizedBox(height: 12.0),
+                itemCount: 10,
+                itemBuilder: (context, index) => const TaskCard(
+                  title: 'Finish Report',
+                  date: 'Thu, 7 Sept 2023',
+                  isOverdue: true,
                 ),
               ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                child: Text('Go Back', style: TextStyle(fontSize: 16)),
-              ),
-            ),
+            )
           ],
+        
+         
         ),
+        
       ),
+     
     );
   }
 }

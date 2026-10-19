@@ -1,5 +1,10 @@
+import 'package:advanced_to_do_list/core/routes/app_routes.dart';
+import 'package:advanced_to_do_list/view/screens/documents_screen.dart';
+import 'package:advanced_to_do_list/view/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
+
 import '../../theme/app_colors.dart';
+import '../screens/home_screen.dart';
 import '../screens/all_tasks_screen.dart';
 import '../screens/calender_screen.dart';
 
@@ -11,32 +16,53 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int currentIndex = 0;
+  String currentRoute = AppRoutes.home;
 
-  late final List<Widget> screens = [
-    const AllTasksScreen(),
-    const CalendarScreen(),
-    const Center(child: Text('Documents Screen')),
-    const Center(child: Text('Settings Screen')),
+  int get currentIndex {
+    switch (currentRoute) {
+      case AppRoutes.home:
+        return 0;
+      case AppRoutes.calendar:
+        return 1;
+      case AppRoutes.allTasks:
+        return 2;
+      case AppRoutes.documents:
+        return 3;
+      case AppRoutes.settings:
+        return 4;
+      default:
+        return 0;
+    }
+  }
+
+  final List<Widget> screens = const [
+    HomeScreen(),
+    CalendarScreen(),
+    AllTasksScreen(),
+    DocumentsScreen(),
+    SettingsScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final isTasksPage = currentIndex == 0;
+    final isAllTasks = currentRoute == AppRoutes.allTasks;
 
     return Scaffold(
       body: SafeArea(
-        child: IndexedStack(
-          index: currentIndex,
-          children: screens,
-        ),
+        child: IndexedStack(index: currentIndex, children: screens),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          if (!isAllTasks) {
+            setState(() {
+              currentRoute = AppRoutes.allTasks;
+            });
+          }
+        },
         shape: const CircleBorder(),
-        child: const Icon(Icons.add, size: 28),
+        child: Icon(Icons.add, size: 28),
       ),
-      floatingActionButtonLocation: isTasksPage
+      floatingActionButtonLocation: isAllTasks
           ? FloatingActionButtonLocation.endFloat
           : FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: Container(
@@ -53,21 +79,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         child: BottomAppBar(
           color: AppColors.white,
           elevation: 0,
-          shape: isTasksPage
-              ? const AutomaticNotchedShape(
-                  RoundedRectangleBorder(),
-                  StadiumBorder(),
-                )
-              : const CircularNotchedRectangle(),
+          shape: isAllTasks ? null : const CircularNotchedRectangle(),
           notchMargin: 8,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              navItem(Icons.home_outlined, 0),
-              navItem(Icons.calendar_month_outlined, 1),
+              navItem(Icons.home_outlined, AppRoutes.home),
+              navItem(Icons.calendar_month_outlined, AppRoutes.calendar),
               const SizedBox(width: 48),
-              navItem(Icons.description_outlined, 2),
-              navItem(Icons.settings_outlined, 3),
+              navItem(Icons.description_outlined, AppRoutes.documents),
+              navItem(Icons.settings_outlined, AppRoutes.settings),
             ],
           ),
         ),
@@ -75,14 +96,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-  Widget navItem(IconData icon, int index) {
-    final isSelected = currentIndex == index;
+  Widget navItem(IconData icon, String routeName) {
+    final isSelected = currentRoute == routeName;
 
     return Expanded(
       child: InkWell(
         onTap: () {
           setState(() {
-            currentIndex = index;
+            currentRoute = routeName;
           });
         },
         child: Padding(
