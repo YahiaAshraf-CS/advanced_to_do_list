@@ -1,4 +1,5 @@
 import 'package:advanced_to_do_list/core/routes/app_routes.dart';
+import 'package:advanced_to_do_list/view/screens/add_task_screen.dart';
 import 'package:advanced_to_do_list/view/screens/all_tasks_screen.dart';
 import 'package:advanced_to_do_list/view/screens/calender_screen.dart';
 import 'package:advanced_to_do_list/view/screens/documents_screen.dart';
@@ -33,6 +34,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.documents: (context) => const DocumentsScreen(),
         AppRoutes.onboarding: (context) => const OnboardingScreen(),
         AppRoutes.signup: (context) => const SignInScreen(),
+        AppRoutes.addTask: (context) => const AddTaskScreen(),
       },
     );
   }

@@ -1,4 +1,5 @@
 import 'package:advanced_to_do_list/core/routes/app_routes.dart';
+import 'package:advanced_to_do_list/view/screens/add_task_screen.dart';
 import 'package:advanced_to_do_list/view/screens/documents_screen.dart';
 import 'package:advanced_to_do_list/view/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         return 3;
       case AppRoutes.settings:
         return 4;
+      case AppRoutes.addTask:
+        return 5;
       default:
         return 0;
     }
@@ -41,27 +44,35 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     AllTasksScreen(),
     DocumentsScreen(),
     SettingsScreen(),
+    AddTaskScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     final isAllTasks = currentRoute == AppRoutes.allTasks;
+    final isAddTask = currentRoute == AppRoutes.addTask;
 
     return Scaffold(
       body: SafeArea(
         child: IndexedStack(index: currentIndex, children: screens),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (!isAllTasks) {
-            setState(() {
-              currentRoute = AppRoutes.allTasks;
-            });
-          }
-        },
-        shape: const CircleBorder(),
-        child: Icon(Icons.add, size: 28),
-      ),
+      floatingActionButton: isAddTask
+          ? null
+          : FloatingActionButton(
+              onPressed: () {
+                if (!isAllTasks) {
+                  setState(() {
+                    currentRoute = AppRoutes.allTasks;
+                  });
+                } else {
+                  setState(() {
+                    currentRoute = AppRoutes.addTask;
+                  });
+                }
+              },
+              shape: const CircleBorder(),
+              child: const Icon(Icons.add, size: 28),
+            ),
       floatingActionButtonLocation: isAllTasks
           ? FloatingActionButtonLocation.endFloat
           : FloatingActionButtonLocation.centerDocked,

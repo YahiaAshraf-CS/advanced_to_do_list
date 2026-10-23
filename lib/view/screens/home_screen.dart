@@ -1,6 +1,7 @@
 import 'package:advanced_to_do_list/theme/app_colors.dart';
 import 'package:advanced_to_do_list/view/widgets/Categories_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_islamic_icons/flutter_islamic_icons.dart';
 import 'package:advanced_to_do_list/view/widgets/task_card.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -71,6 +72,16 @@ class HomeScreen extends StatelessWidget {
                   icon: Icons.favorite_border,
                   title: 'Health',
                   color: Colors.redAccent,
+                ),
+                 CategoryWidget(
+                  icon: Icons.school_outlined,
+                  title: 'study',
+                  color: AppColors.primaryBlue,
+                ),
+                 CategoryWidget(
+                  icon: FlutterIslamicIcons.quran2,
+                  title: 'Religion',
+                  color: AppColors.green,
                 ),
               ],
             ),

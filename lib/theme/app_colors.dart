@@ -9,6 +9,7 @@ class AppColors {
   static const Color secondaryText = Color(0xFF64748B);
   static const Color overdue = Color(0xFFDC2626);
   static const Color white = Colors.white;
+  static const Color green = Color.fromARGB(255, 30, 164, 35);
 
   static const Color black = Colors.black;
   static const Color grey = Colors.grey;
