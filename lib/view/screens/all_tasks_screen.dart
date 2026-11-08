@@ -1,9 +1,19 @@
-import 'package:advanced_to_do_list/view/widgets/task_card.dart';
+import 'package:advanced_to_do_list/features/tasks/data/models/task_model.dart';
+import 'package:advanced_to_do_list/features/tasks/data/services/task_servies.dart';
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 
-class AllTasksScreen extends StatelessWidget {
+import '../widgets/task_card.dart';
+
+class AllTasksScreen extends StatefulWidget {
   const AllTasksScreen({super.key});
+
+  @override
+  State<AllTasksScreen> createState() => _AllTasksScreenState();
+}
+
+class _AllTasksScreenState extends State<AllTasksScreen> {
+  final TaskService _taskService = TaskService();
 
   @override
   Widget build(BuildContext context) {
@@ -21,51 +31,98 @@ class AllTasksScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 22),
-          const Text(
-            'Overdue',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.overdue,
-            ),
-          ),
-          const SizedBox(height: 12),
-          const TaskCard(
-            title: 'Finish Report',
-            date: 'Thu, 7 Sept 2023',
-            isOverdue: true,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'All Tasks',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-              color: AppColors.darkBlue,
-            ),
-          ),
-          const SizedBox(height: 12),
           Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: const [
-                TaskCard(
-                  title: 'Read Book',
-                  date: 'Thu, 7 Sept 2023',
-                ),
-                TaskCard(
-                  title: 'Water Plants',
-                  date: 'Thu, 7 Sept 2023',
-                ),
-                TaskCard(
-                  title: 'Walk the dogs',
-                  date: 'Thu, 7 Sept 2023',
-                ),
-                TaskCard(
-                  title: 'Finish Report',
-                  date: 'Thu, 7 Sept 2023',
-                ),
-              ],
+            child: StreamBuilder<List<TaskModel>>(
+              stream: _taskService.getUserTasks(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Error loading tasks: ${snapshot.error}',
+                      style: const TextStyle(color: AppColors.overdue),
+                    ),
+                  );
+                }
+
+                final tasks = snapshot.data ?? [];
+
+                if (tasks.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'No tasks found. Add a new task to get started!',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: AppColors.secondaryText,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: tasks.length,
+                  itemBuilder: (context, index) {
+                    final task = tasks[index];
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Row(
+                        children: [
+                          // بطاقة المهمة الأساسية
+                          Expanded(
+                            child: TaskCard(
+                              title: task.title,
+                              date: '${task.date} - ${task.time}',
+                              isOverdue: false,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // زر الحذف بجانب بطاقة المهمة
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.lightGray,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: AppColors.borderColor),
+                            ),
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: AppColors.overdue,
+                              ),
+                              onPressed: () async {
+                                try {
+                                  await _taskService.deleteTask(task.id);
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Deleted "${task.title}"'),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
+                                } catch (e) {
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Failed to delete: $e'),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
             ),
           ),
         ],

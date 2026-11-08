@@ -1,273 +1,340 @@
-import 'package:advanced_to_do_list/theme/app_colors.dart';
+import 'package:advanced_to_do_list/features/tasks/data/services/category_servies.dart';
+import 'package:advanced_to_do_list/features/tasks/data/services/task_servies.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:advanced_to_do_list/theme/app_colors.dart';
+import 'package:advanced_to_do_list/features/tasks/data/models/category_model.dart';
 
 class AddTaskScreen extends StatefulWidget {
-  const AddTaskScreen({super.key});
+  final VoidCallback? onTaskAdded;
+
+  const AddTaskScreen({super.key, this.onTaskAdded});
 
   @override
   State<AddTaskScreen> createState() => _AddTaskScreenState();
 }
 
 class _AddTaskScreenState extends State<AddTaskScreen> {
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final TaskService _taskService = TaskService();
+  final CategoryService _categoryService = CategoryService();
+
+  String _selectedCategory = 'Work';
+  String _selectedDate = '';
+  String _selectedTime = '';
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _selectedDate = DateFormat('EEE, d MMM yyyy').format(now);
+    _selectedTime = DateFormat('hh:mm a').format(now);
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDate = DateFormat('EEE, d MMM yyyy').format(picked);
+      });
+    }
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null) {
+      if (!mounted) return;
+      setState(() {
+        _selectedTime = picked.format(context);
+      });
+    }
+  }
+
+  Future<void> _saveTask() async {
+    if (_titleController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter task title')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _taskService.addTask(
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        category: _selectedCategory,
+        date: _selectedDate,
+        time: _selectedTime,
+      );
+
+      if (!mounted) return;
+
+      if (widget.onTaskAdded != null) {
+        widget.onTaskAdded!();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Add New Task'),
+        backgroundColor: AppColors.primaryBlue,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Add task',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2196F3),
-                      decoration: TextDecoration.underline,
-                      decorationColor: Color(0xFF2196F3),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                    
-                    },
-                    child: const Text(
-                      'Cancel',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFFFF8A65),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 15),
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEDF6FF),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: const Color(0xFFB3E5FC),
-                    width: 1,
-                  ),
-                ),
-                child: TextField(
-                  controller: TextEditingController(text: 'Finish Report'),
-                  decoration: InputDecoration(
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    border: InputBorder.none,
-                  ),
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Task Title',
                   style: TextStyle(
-                    color: Colors.black87,
                     fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.darkBlue,
                   ),
                 ),
-              ),
-              const SizedBox(height: 25),
-              const Text(
-                'Category',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2196F3),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEDF6FF),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: 'Work',
-                    isExpanded: true,
-                    icon: const Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Colors.black54,
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Work',
-                        child: Text(
-                          'Work',
-                          style: TextStyle(
-                            color: AppColors.darkBlue,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Personal',
-                        child: Text(
-                          'Personal',
-                          style: TextStyle(
-                            color: AppColors.overdue,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: 'health',
-                        child: Text(
-                          'health',
-                          style: TextStyle(
-                            color: AppColors.overdue,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: 'shopping',
-                        child: Text(
-                          'Shopping',
-                          style: TextStyle(
-                            color: AppColors.yellow,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Study',
-                        child: Text(
-                          'Study',
-                          style: TextStyle(
-                            color: AppColors.primaryBlue,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: 'religion',
-                        child: Text(
-                          'religion',
-                          style: TextStyle(
-                            color: AppColors.green,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        value = value;
-                      });
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(height: 25),
-              const Text(
-                'Date',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2196F3),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: const [
-                  Icon(Icons.calendar_today_outlined,
-                      color: Colors.amber, size: 22),
-                  SizedBox(width: 12),
-                  Text(
-                    'Set due date',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black54,
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _titleController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter task title',
+                    filled: true,
+                    fillColor: AppColors.taskBackground,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: const [
-                  Icon(Icons.access_time, color: Color(0xFFFF8A65), size: 22),
-                  SizedBox(width: 12),
-                  Text(
-                    'Set Time',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black54,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Description',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.darkBlue,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _descriptionController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: 'Enter task description',
+                    filled: true,
+                    fillColor: AppColors.taskBackground,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 25),
-              const Text(
-                'Reminder',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2196F3),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: const [
-                  Icon(Icons.notifications_none,
-                      color: Color(0xFFFF8A65), size: 22),
-                  SizedBox(width: 12),
-                  Text(
-                    'Set Reminder',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black54,
-                    ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Category',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.darkBlue,
                   ),
-                ],
-              ),
-              const SizedBox(height: 25),
-              const Text(
-                'Notes',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2196F3),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: Container(
+                const SizedBox(height: 8),
+                StreamBuilder<List<CategoryModel>>(
+                  stream: _categoryService.getUserCategories(),
+                  builder: (context, snapshot) {
+                    final categories = snapshot.data ?? [];
+
+                    if (categories.isNotEmpty &&
+                        !categories.any((c) => c.name == _selectedCategory)) {
+                      _selectedCategory = categories.first.name;
+                    }
+
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.taskBackground,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value:
+                              categories.any((c) => c.name == _selectedCategory)
+                                  ? _selectedCategory
+                                  : null,
+                          isExpanded: true,
+                          hint: const Text('Select Category'),
+                          items: categories.map((cat) {
+                            return DropdownMenuItem<String>(
+                              value: cat.name,
+                              child: Row(
+                                children: [
+                                  Icon(cat.iconData,
+                                      color: cat.color, size: 20),
+                                  const SizedBox(width: 10),
+                                  Text(cat.name),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() {
+                                _selectedCategory = value;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Date',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.darkBlue,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          InkWell(
+                            onTap: _pickDate,
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: AppColors.taskBackground,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.calendar_today,
+                                      size: 18, color: AppColors.primary),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _selectedDate,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Time',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.darkBlue,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          InkWell(
+                            onTap: _pickTime,
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: AppColors.taskBackground,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.access_time,
+                                      size: 18, color: AppColors.primary),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _selectedTime,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 40),
+                SizedBox(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEDF6FF),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    'Make sure to research from internet',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black54,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _saveTask,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            'Create Task',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 15),
-              Align(
-                alignment: Alignment.centerRight,
-                child: FloatingActionButton(
-                  onPressed: () {},
-                  backgroundColor: const Color(0xFF2196F3),
-                  elevation: 0,
-                  child: const Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 30,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

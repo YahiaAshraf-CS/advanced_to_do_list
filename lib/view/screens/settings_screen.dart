@@ -166,22 +166,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(12.0),
         border: Border.all(color: AppColors.borderColor),
       ),
-      child: ListTile(
-        leading: Icon(icon, color: AppColors.primary),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 15.0,
-            fontWeight: FontWeight.w500,
-            color: AppColors.darkText,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12.0),
+        child: ListTile(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
           ),
+          leading: Icon(icon, color: AppColors.primary),
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 15.0,
+              fontWeight: FontWeight.w500,
+              color: AppColors.darkText,
+            ),
+          ),
+          trailing: const Icon(
+            Icons.arrow_forward_ios,
+            size: 16.0,
+            color: AppColors.secondaryText,
+          ),
+          onTap: () {},
         ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          size: 16.0,
-          color: AppColors.secondaryText,
-        ),
-        onTap: () {},
       ),
     );
   }

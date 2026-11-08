@@ -1,5 +1,8 @@
+import 'package:advanced_to_do_list/features/tasks/data/models/task_model.dart';
+import 'package:advanced_to_do_list/features/tasks/data/services/task_servies.dart';
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+
 import '../widgets/calendar_task_card.dart';
 
 class CalendarScreen extends StatefulWidget {
@@ -10,13 +13,10 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
+  final TaskService _taskService = TaskService();
+
   DateTime displayedMonth = DateTime.now();
   DateTime selectedDate = DateTime.now();
-
-  final List<_CalendarTask> tasks = [
-    _CalendarTask(title: 'Finish Report', time: '09:45 AM'),
-    _CalendarTask(title: 'Water the plants', time: '10:00 AM'),
-  ];
 
   void changeMonth(int amount) {
     setState(() {
@@ -50,10 +50,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return months[displayedMonth.month - 1];
   }
 
-  String formatDate(DateTime date) {
-    final day = date.day.toString().padLeft(2, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    return '$day/$month/${date.year}';
+  // تنسيق التاريخ ليتطابق مع الشكل المخزن في قاعدة البيانات (مثال: Thu, 7 Sep 2023 أو ما شابه حسب تنسيقك)
+  // سنقوم بمطابقة اليوم والشهر والسنة
+  bool isSameDate(DateTime date, String taskDateStr) {
+    // تنسيق التاريخ المختار لنقارنه بالنص المخزن
+    // أو يمكننا مطابقة الأجزاء (Day, Month Name, Year)
+    try {
+      // مثال بسيط للمقارنة: التأكد من أن النص يحتوي على رقم اليوم والشهر والسنة
+      final dayStr = date.day.toString();
+      final yearStr = date.year.toString();
+      return taskDateStr.contains(dayStr) && taskDateStr.contains(yearStr);
+    } catch (_) {
+      return false;
+    }
   }
 
   @override
@@ -220,31 +229,67 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
           ),
 
-          // Tasks for the selected date
+          // Tasks for the selected date from Firestore
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-            child: Column(
-              children: tasks
-                  .map(
-                    (task) => CalendarTaskCard(
-                      date: formatDate(selectedDate),
-                      time: task.time,
-                      title: task.title,
-                      onDelete: () {
-                        setState(() {
-                          tasks.remove(task);
-                        });
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${task.title} deleted'),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                      },
+            child: StreamBuilder<List<TaskModel>>(
+              stream: _taskService.getUserTasks(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: CircularProgressIndicator(),
                     ),
-                  )
-                  .toList(),
+                  );
+                }
+
+                if (snapshot.hasError) {
+                  return const Text('Error loading tasks for calendar.');
+                }
+
+                final allTasks = snapshot.data ?? [];
+
+                // تصفية المهام بناءً على اليوم المختار
+                final selectedDayTasks = allTasks.where((task) {
+                  return isSameDate(selectedDate, task.date);
+                }).toList();
+
+                if (selectedDayTasks.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text(
+                        'No tasks for this date.',
+                        style:
+                            TextStyle(color: Color(0xFF858B96), fontSize: 15),
+                      ),
+                    ),
+                  );
+                }
+
+                return Column(
+                  children: selectedDayTasks
+                      .map(
+                        (task) => CalendarTaskCard(
+                          date: task.date,
+                          time: task.time,
+                          title: task.title,
+                          onDelete: () async {
+                            await _taskService.deleteTask(task.id);
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('"${task.title}" deleted'),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                      .toList(),
+                );
+              },
             ),
           ),
 
@@ -253,14 +298,4 @@ class _CalendarScreenState extends State<CalendarScreen> {
       ),
     );
   }
-}
-
-class _CalendarTask {
-  final String title;
-  final String time;
-
-  _CalendarTask({
-    required this.title,
-    required this.time,
-  });
 }

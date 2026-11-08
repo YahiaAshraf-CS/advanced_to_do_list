@@ -6,12 +6,14 @@ class CategoryWidget extends StatelessWidget {
   final IconData icon;
   final String title;
   final Color color;
+  final Color borderColor;
 
   const CategoryWidget({
     super.key,
     required this.icon,
     required this.title,
     required this.color,
+    required this.borderColor,
   });
 
   @override
@@ -20,7 +22,7 @@ class CategoryWidget extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.3),
+          color: borderColor ,
           width: 1.5,
         ),
       ),
