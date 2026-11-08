@@ -38,14 +38,27 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
-  final List<Widget> screens = const [
-    HomeScreen(),
-    CalendarScreen(),
-    AllTasksScreen(),
-    DocumentsScreen(),
-    SettingsScreen(),
-    AddTaskScreen(),
-  ];
+  // قائمة الشاشات مع تمرير دالة التنقل للـ HomeScreen ودالة الرجوع للـ AddTaskScreen
+  List<Widget> get screens => [
+        HomeScreen(
+          onNavigateToRoute: (route) {
+            setState(() {
+              currentRoute = route;
+            });
+          },
+        ),
+        const CalendarScreen(),
+        const AllTasksScreen(),
+        const DocumentsScreen(),
+        const SettingsScreen(),
+        AddTaskScreen(
+          onTaskAdded: () {
+            setState(() {
+              currentRoute = AppRoutes.home;
+            });
+          },
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +72,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       floatingActionButton: isAddTask
           ? null
           : FloatingActionButton(
+              heroTag:
+                  null, // منع تضارب الـ Hero animation نهائياً عند فتح صفحات فرعية
               onPressed: () {
                 if (!isAllTasks) {
                   setState(() {

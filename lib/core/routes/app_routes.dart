@@ -8,4 +8,5 @@ class AppRoutes {
   static const login = '/login';
   static const signup = '/signup';
   static const addTask = '/add-task';
+  static const addCustomCategory = '/add-custom-category';
 }
