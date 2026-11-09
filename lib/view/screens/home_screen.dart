@@ -1,12 +1,14 @@
-import 'package:advanced_to_do_list/features/tasks/data/models/task_model.dart';
-import 'package:advanced_to_do_list/features/tasks/data/services/category_servies.dart';
-import 'package:advanced_to_do_list/features/tasks/data/services/task_servies.dart';
+import 'package:advanced_to_do_list/features/tasks/data/notefication/notification_service.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:advanced_to_do_list/features/tasks/data/models/task_model.dart';
+import 'package:advanced_to_do_list/features/tasks/data/services/task_servies.dart';
+import 'package:advanced_to_do_list/features/tasks/data/services/category_servies.dart';
 import 'package:advanced_to_do_list/core/routes/app_routes.dart';
 import 'package:advanced_to_do_list/theme/app_colors.dart';
 import 'package:advanced_to_do_list/view/widgets/Categories_widget.dart';
 import 'package:advanced_to_do_list/view/widgets/task_card.dart';
-
 import 'package:advanced_to_do_list/features/tasks/data/models/category_model.dart';
 import 'package:advanced_to_do_list/view/screens/add_custom_category_screen.dart';
 
@@ -22,8 +24,53 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TaskService _taskService = TaskService();
   final CategoryService _categoryService = CategoryService();
+  final User? currentUser = FirebaseAuth.instance.currentUser;
+
+  String userName = 'User';
 
   @override
+  void initState() {
+    super.initState();
+    _fetchUserName();
+  }
+  
+
+  Future<void> _fetchUserName() async {
+    if (currentUser != null) {
+      if (currentUser!.displayName != null &&
+          currentUser!.displayName!.isNotEmpty) {
+        setState(() {
+          userName = currentUser!.displayName!;
+        });
+        return;
+      }
+
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser!.uid)
+            .get();
+        if (doc.exists && doc.data() != null) {
+          final data = doc.data() as Map<String, dynamic>;
+          if (data.containsKey('name') && data['name'] != null) {
+            setState(() {
+              userName = data['name'];
+            });
+            return;
+          }
+        }
+      } catch (_) {}
+
+      if (currentUser!.email != null) {
+        setState(() {
+          userName = currentUser!.email!.split('@').first;
+        });
+      }
+    }
+  }
+
+  
+   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -33,6 +80,37 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Hi, $userName',
+                        style: const TextStyle(
+                          fontSize: 22.0,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.black,
+                        ),
+                      ),
+                      const SizedBox(width: 8.0),
+                      const Text(
+                        '👋',
+                        style: TextStyle(fontSize: 22.0),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(
+                      Icons.notifications_outlined,
+                      color: AppColors.black,
+                      size: 26,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8.0),
               Container(
                 margin: const EdgeInsets.only(top: 8.0),
                 padding: const EdgeInsets.symmetric(
@@ -127,11 +205,68 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     itemBuilder: (context, index) {
                       final cat = categories[index];
-                      return CategoryWidget(
-                        icon: cat.iconData,
-                        title: cat.name,
-                        color: cat.color,
-                        borderColor: cat.color,
+                      return Stack(
+                        children: [
+                          Positioned.fill(
+                            child: CategoryWidget(
+                              icon: cat.iconData,
+                              title: cat.name,
+                              color: cat.color,
+                              borderColor: cat.color,
+                            ),
+                          ),
+                          Positioned(
+                            top: 2,
+                            right: 2,
+                            child: GestureDetector(
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    title: const Text('Delete Category'),
+                                    content: Text(
+                                        'Are you sure you want to delete "${cat.name}"?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(ctx),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () async {
+                                          Navigator.pop(ctx);
+                                          await _categoryService
+                                              .deleteCategory(cat.id);
+                                        },
+                                        child: const Text(
+                                          'Delete',
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.close,
+                                  size: 14,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       );
                     },
                   );
@@ -149,22 +284,27 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: AppColors.black,
                     ),
                   ),
-                  InkWell(
-                    onTap: () {
-                      if (widget.onNavigateToRoute != null) {
-                        widget.onNavigateToRoute!(AppRoutes.allTasks);
-                      } else {
-                        Navigator.pushNamed(context, AppRoutes.allTasks);
-                      }
-                    },
-                    child: const Text(
-                      "See all",
-                      style: TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                  Row(
+                    children: [
+                      
+                      InkWell(
+                        onTap: () {
+                          if (widget.onNavigateToRoute != null) {
+                            widget.onNavigateToRoute!(AppRoutes.allTasks);
+                          } else {
+                            Navigator.pushNamed(context, AppRoutes.allTasks);
+                          }
+                        },
+                        child: const Text(
+                          "See all",
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -201,10 +341,42 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemCount: tasks.length,
                       itemBuilder: (context, index) {
                         final task = tasks[index];
-                        return TaskCard(
-                          title: task.title,
-                          date: '${task.date} - ${task.time}',
-                          isOverdue: false,
+                        return Row(
+                          children: [
+                            Checkbox(
+                              value: task.isCompleted,
+                              activeColor: AppColors.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              onChanged: (bool? value) async {
+                                if (value != null) {
+                                  try {
+                                    await _taskService.updateTaskCompletion(
+                                        task.id, value);
+                                  } catch (e) {
+                                    if (!context.mounted) return;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(
+                                              'Failed to update status: $e')),
+                                    );
+                                  }
+                                }
+                              },
+                            ),
+                            Expanded(
+                              child: TaskCard(
+                                title: task.title,
+                                date: '${task.date} - ${task.time}',
+                                category: task.category,
+                                iconName: task.iconName,
+                                categoryColor: Color(task.colorValue),
+                                isOverdue: false,
+                                isCompleted: task.isCompleted,
+                              ),
+                            ),
+                          ],
                         );
                       },
                     );

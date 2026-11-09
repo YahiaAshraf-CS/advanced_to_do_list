@@ -1,4 +1,5 @@
 import 'package:advanced_to_do_list/core/routes/app_routes.dart';
+import 'package:advanced_to_do_list/features/tasks/data/notefication/notification_service.dart';
 import 'package:advanced_to_do_list/view/screens/add_custom_category_screen.dart';
 import 'package:advanced_to_do_list/view/screens/add_task_screen.dart';
 import 'package:advanced_to_do_list/view/screens/all_tasks_screen.dart';
@@ -12,6 +13,7 @@ import 'package:advanced_to_do_list/view/widgets/main_navigation_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'firebase_options.dart';
 import 'theme/app_theme.dart';
@@ -22,7 +24,14 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await NotificationService.init();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.requestNotificationsPermission();
   runApp(const MyApp());
 }
 
