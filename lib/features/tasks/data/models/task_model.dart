@@ -5,6 +5,8 @@ class TaskModel {
   final String date;
   final String time;
   final String category;
+  final String iconName;
+  final int colorValue;
   final bool isCompleted;
   final String userId;
 
@@ -15,11 +17,12 @@ class TaskModel {
     required this.date,
     required this.time,
     required this.category,
+    required this.iconName,
+    required this.colorValue,
     required this.isCompleted,
     required this.userId,
   });
 
-  // transform Map from Firestore to TaskModel
   factory TaskModel.fromMap(Map<String, dynamic> map, String documentId) {
     return TaskModel(
       id: documentId,
@@ -28,12 +31,13 @@ class TaskModel {
       date: map['date'] ?? '',
       time: map['time'] ?? '',
       category: map['category'] ?? 'General',
+      iconName: map['iconName'] ?? 'folder',
+      colorValue: map['colorValue'] ?? 0xFF2196F3,
       isCompleted: map['isCompleted'] ?? false,
       userId: map['userId'] ?? '',
     );
   }
 
-// transform TaskModel to Map to save in Firestore
   Map<String, dynamic> toMap() {
     return {
       'title': title,
@@ -41,6 +45,8 @@ class TaskModel {
       'date': date,
       'time': time,
       'category': category,
+      'iconName': iconName,
+      'colorValue': colorValue,
       'isCompleted': isCompleted,
       'userId': userId,
     };

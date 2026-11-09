@@ -2,7 +2,6 @@ import 'package:advanced_to_do_list/features/tasks/data/models/task_model.dart';
 import 'package:advanced_to_do_list/features/tasks/data/services/task_servies.dart';
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
-
 import '../widgets/task_card.dart';
 
 class AllTasksScreen extends StatefulWidget {
@@ -75,16 +74,40 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
                       padding: const EdgeInsets.only(bottom: 16.0),
                       child: Row(
                         children: [
-                          // بطاقة المهمة الأساسية
+                          Checkbox(
+                            value: task.isCompleted,
+                            activeColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            onChanged: (bool? value) async {
+                              if (value != null) {
+                                try {
+                                  await _taskService.updateTaskCompletion(
+                                      task.id, value);
+                                } catch (e) {
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            'Failed to update status: $e')),
+                                  );
+                                }
+                              }
+                            },
+                          ),
                           Expanded(
                             child: TaskCard(
-                              title: task.title,
-                              date: '${task.date} - ${task.time}',
-                              isOverdue: false,
-                            ),
+                            title: task.title,
+                            date: '${task.date} - ${task.time}',
+                            category: task.category,
+                            iconName: task.iconName,
+                            categoryColor: Color(task.colorValue),
+                            isOverdue: false,
+                            isCompleted: task.isCompleted,
+                          )
                           ),
                           const SizedBox(width: 8),
-                          // زر الحذف بجانب بطاقة المهمة
                           Container(
                             decoration: BoxDecoration(
                               color: AppColors.lightGray,
